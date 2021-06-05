@@ -1,0 +1,35 @@
+service: disableAccessKeys
+
+provider:
+  name: aws
+  region: eu-central-1
+  runtime: python3.8
+  iamManagedPolicies:
+  - arn:aws:iam::aws:policy/AWSLambdaExecute
+  - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  iamRoleStatements:
+  - Effect: 'Allow'
+    Action:
+    - iam:ListUsers
+    - iam:CreateAccessKey
+    - iam:DeleteAccessKey
+    - iam:GetAccessKeyLastUsed
+    - iam:GetUser
+    - iam:ListAccessKeys
+    - iam:UpdateAccessKey
+    Resource: "*"
+
+package:
+  exclude:
+  - package/**
+
+functions:
+  disableAccessKeys:
+    name: disableAccessKeys
+    description: Function used to disable IAM Access Keys older than specified days
+    handler: handler.lambda_handler
+    events:
+      - schedule: cron(0 8 ? * 6 *)
+    environment:
+      DAYS_RETENTION: 180
+      STATUS_FILTER: 'Active'
